@@ -16,7 +16,6 @@ from langchain_core.messages import HumanMessage, SystemMessage, AIMessage
 from langchain.chains import create_history_aware_retriever, create_retrieval_chain
 from langchain_pinecone import PineconeVectorStore  
 # from langchain_community.embeddings import HuggingFaceEmbeddings # has dimension 384
-from questionclassifier import QuestionClassifierDistilBERT
 
 # from langchain_community.document_loaders import Str
 ################################################################################
