@@ -14,7 +14,8 @@ from mistralai.client import MistralClient#, ChatMessage
 from langchain_mistralai import MistralAIEmbeddings
 from langchain_core.messages import HumanMessage, SystemMessage, AIMessage
 from langchain.chains import create_history_aware_retriever, create_retrieval_chain
-from langchain_pinecone import PineconeVectorStore  
+from langchain_pinecone import PineconeVectorStore 
+import os 
 # from langchain_community.embeddings import HuggingFaceEmbeddings # has dimension 384
 
 # from langchain_community.document_loaders import Str
@@ -92,7 +93,7 @@ if __name__ == '__main__':
     index_name = "actian"
 
     pinecone_manager = PineconeManager(pinecone_api_key=pinecone_api_key,mistral_api_key=mistral_api_key,index_name=index_name)
-    pinecone_manager.add_data(documentPath="actian.txt")
+    pinecone_manager.add_data(documentPath="") # TODO: path to documentation
     retriever = pinecone_manager.get_retriever()
 
     ################ CHAT SETUP ################
@@ -124,11 +125,8 @@ if __name__ == '__main__':
             ("human", "{input}"),
         ]
     )
-    
+    question_answer_chain = create_stuff_documents_chain(model, qa_prompt)
     rag_chain = create_retrieval_chain(history_aware_retriever, question_answer_chain)
-
-    # question classification model
-    questionclassifier = QuestionClassifierDistilBERT()
 
     ################################################################################
     ############################# FRONT END (GRADIO) ###############################
