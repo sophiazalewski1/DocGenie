@@ -190,40 +190,28 @@ if __name__ == '__main__':
                     output = {}
                     chat_history.append((message,""))
 
-                    ### ROUTER
-                    prediction = questionclassifier.predict_difficulty([message])
+                    # single hop RAG
+                    for chunk in rag_chain.stream({"input": message, "chat_history":history}):
+                        for key in chunk:
+                            if key not in output: output[key] = chunk[key]
+                            else: output[key] += chunk[key]
+                        if "answer" in output:
+                            bot_message = output["answer"]
+                            
+                            # Append citation if exists
+                            source_txt=''
+                            if ("context" in output and len(output['context']) >= 1):
+                                metadata = [doc.metadata for doc in output['context']]
+                                source_txt = """\n\n```\nSources: {}\n```\n""".format(str(metadata))
 
-                    if prediction[0] == "Easy" and False:
-                        print("The question is Easy")
-                    elif prediction[0] == "Medium" or True:
-                        # single hop RAG
-                        for chunk in rag_chain.stream({"input": message, "chat_history":history}):
-                            for key in chunk:
-                                if key not in output: output[key] = chunk[key]
-                                else: output[key] += chunk[key]
-                            if "answer" in output:
-                                bot_message = output["answer"]
-                                
-                                # Append citation if exists
-                                source_txt=''
-                                if ("context" in output and len(output['context']) >= 1):
-                                    metadata = [doc.metadata for doc in output['context']]
-                                    source_txt = """\n\n```\nSources: {}\n```\n""".format(str(metadata))
+                            chat_history[-1] = (message, bot_message + source_txt)
+                            yield "", chat_history
 
-                                chat_history[-1] = (message, bot_message + source_txt)
-                                yield "", chat_history
-
-                        # Obtain answer from RAG and append to history
-                        history.extend([HumanMessage(content=message), bot_message])
-                        chat_history.append((message, bot_message))
-                        return "", chat_history
-                    else:
-                        # MULTI HOP RAG
-                        print("The question is Hard")
-                    ### End ROUTER part
-
+                    # Obtain answer from RAG and append to history
+                    history.extend([HumanMessage(content=message), bot_message])
+                    chat_history.append((message, bot_message))
+                    return "", chat_history
                     
-                
                 def clear_chatbot():
                     return "", []
                 def clear_textbox():
