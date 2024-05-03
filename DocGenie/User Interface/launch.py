@@ -124,7 +124,7 @@ if __name__ == '__main__':
             ("human", "{input}"),
         ]
     )
-    question_answer_chain = create_stuff_documents_chain(model, qa_prompt)
+    
     rag_chain = create_retrieval_chain(history_aware_retriever, question_answer_chain)
 
     # question classification model
